@@ -1,5 +1,6 @@
 import { ClerkProvider } from "@clerk/clerk-react";
 import { BrowserRouter } from "react-router-dom";
+import { shadesOfPurple } from "@clerk/themes";
 import App from "./App.tsx";
 import "./index.css";
 import { StrictMode } from "react";
@@ -14,7 +15,12 @@ if (!CLERK_KEY) {
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <ClerkProvider publishableKey={CLERK_KEY}>
+    <ClerkProvider
+      appearance={{
+        baseTheme: shadesOfPurple,
+      }}
+      publishableKey={CLERK_KEY}
+    >
       <BrowserRouter>
         <App />
       </BrowserRouter>
