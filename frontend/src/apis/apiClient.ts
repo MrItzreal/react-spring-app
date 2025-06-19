@@ -2,7 +2,7 @@ import axios, { type AxiosRequestConfig } from "axios";
 import { useAuth } from "@clerk/clerk-react";
 
 const apiClient = axios.create({
-  baseURL: "http://localhost:8080/api",
+  baseURL: "http://localhost:8080/api/todos",
 });
 
 export const useApiClient = () => {
@@ -33,5 +33,4 @@ const fetchUserTodos = async () => {
   const response = await fetch(`/api/todos?userId=${userId}`)
   return response.json()
 }
-
 */
