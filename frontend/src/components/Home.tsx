@@ -44,9 +44,7 @@ const Home = () => (
         <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 hover:bg-white/15 transition-all duration-300 hover:scale-105">
           <CheckCircle className="w-8 h-8 text-green-400 mb-3 mx-auto" />
           <h3 className="text-white font-semibold mb-2">Smart Organization</h3>
-          <p className="text-white/70 text-sm">
-            AI-powered task categorization and priority management
-          </p>
+          <p className="text-white/70 text-sm">Task priority management</p>
         </div>
 
         <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 hover:bg-white/15 transition-all duration-300 hover:scale-105">

@@ -2,7 +2,7 @@ import axios, { type AxiosRequestConfig } from "axios";
 import { useAuth } from "@clerk/clerk-react";
 
 const apiClient = axios.create({
-  baseURL: "http://localhost:8080/api/todos",
+  baseURL: "http://localhost:8080/api",
 });
 
 export const useApiClient = () => {

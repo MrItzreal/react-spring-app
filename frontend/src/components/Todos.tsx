@@ -1,27 +1,66 @@
+import { useState, useEffect } from "react";
+import { useApiClient } from "../apis/apiClient";
 import { Plus, Trash } from "lucide-react";
 import { UserButton } from "@clerk/clerk-react";
 
-// Define the type for a single todo item
+// .TodoDto
 interface Todo {
   id: number;
-  text: string;
-  completed: boolean;
+  task: string;
+  isCompleted: boolean;
+}
+// .CreateTodoRequestDto
+interface CreateTodoRequest {
+  task: string;
 }
 
-// Hardcoded data for UI display purposes
-const hardcodedTodos: Todo[] = [
-  { id: 1, text: "Review project requirements", completed: true },
-  { id: 2, text: "Create initial UI mockups", completed: true },
-  { id: 3, text: "Develop sign-in/sign-out flow", completed: false },
-  { id: 4, text: "Set up the database schema", completed: false },
-];
-
-// Calculate active todos count from hardcoded data
-const activeTodosCount = hardcodedTodos.filter(
-  (todo) => !todo.completed
-).length;
-
 const Todos = () => {
+  const [todos, setTodos] = useState<Todo[]>([]);
+  const [newTask, setNewTask] = useState("");
+  const { makeAuthenticatedRequest } = useApiClient();
+
+  // GET req
+  useEffect(() => {
+    const fetchTodos = async () => {
+      try {
+        const res = await makeAuthenticatedRequest({
+          url: "/todos",
+          method: "GET",
+        });
+        setTodos(res.data);
+      } catch (err) {
+        console.error("Failed to fetch todos:", err);
+      }
+    };
+    fetchTodos();
+  }, []);
+
+  // POST req
+  const handleAddTask = async () => {
+    // Prevent adding empty tasks
+    if (newTask.trim() === "") {
+      return;
+    }
+
+    try {
+      const requestBody: CreateTodoRequest = { task: newTask };
+
+      const newTodo = await makeAuthenticatedRequest({
+        url: "/todos",
+        method: "POST",
+        data: requestBody,
+      });
+
+      setTodos((currentTodos) => [...currentTodos, newTodo.data]);
+      setNewTask("");
+    } catch (err) {
+      console.error("Failed to add todo:", err);
+    }
+  };
+
+  // Calculates the number of incomplete todos
+  const activeTodos = todos.filter((todo) => !todo.isCompleted).length;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-900 via-purple-900 to-pink-800 relative overflow-hidden">
       {/* Animated background elements */}
@@ -58,46 +97,34 @@ const Todos = () => {
             <input
               type="text"
               placeholder="Add a new task..."
+              value={newTask}
+              onChange={(e) => setNewTask(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleAddTask()}
               className="flex-grow p-4 text-lg bg-white/20 backdrop-blur-sm border border-white/30 text-white placeholder-white/70 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-transparent transition-all duration-300"
             />
             <button
               type="button"
               className="p-4 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white rounded-r-lg transition-all duration-300 disabled:opacity-50"
-              disabled={true}
+              onClick={handleAddTask}
+              disabled={!newTask.trim()}
             >
               <Plus size={24} />
             </button>
           </div>
 
           {/* Filters and summary */}
-          <div className="flex flex-col sm:flex-row justify-between items-center mb-4 text-sm text-white/70">
-            <p className="mb-2 sm:mb-0 font-medium">
-              {activeTodosCount} items left
-            </p>
-            <div className="flex space-x-2">
-              <button className="px-3 py-1 rounded-md bg-white/20 text-white font-bold transition-all duration-300 hover:bg-white/30">
-                All
-              </button>
-              <button className="px-3 py-1 rounded-md text-white/70 hover:text-white hover:bg-white/10 transition-all duration-300">
-                Active
-              </button>
-              <button className="px-3 py-1 rounded-md text-white/70 hover:text-white hover:bg-white/10 transition-all duration-300">
-                Completed
-              </button>
-            </div>
-            <button className="text-white/70 hover:text-pink-300 transition-colors duration-300 mt-2 sm:mt-0 font-medium">
-              Clear Completed
-            </button>
+          <div className="flex flex-col sm:flex-row justify-center items-center mb-4 text-sm text-white/70">
+            <p className="mb-2 sm:mb-0 font-medium">{activeTodos} items left</p>
           </div>
 
           {/* Todo List */}
           <div className="space-y-3 max-h-[40vh] overflow-y-auto pr-2">
-            {hardcodedTodos.length > 0 ? (
-              hardcodedTodos.map((todo) => (
+            {todos.length > 0 ? (
+              todos.map((todo) => (
                 <div
                   key={todo.id}
                   className={`flex items-center p-4 rounded-xl transition-all duration-300 ${
-                    todo.completed
+                    todo.isCompleted
                       ? "bg-white/5 backdrop-blur-sm border border-white/10"
                       : "bg-white/15 backdrop-blur-sm border border-white/20 hover:bg-white/20"
                   }`}
@@ -105,13 +132,13 @@ const Todos = () => {
                   <div
                     className="flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 cursor-pointer"
                     style={{
-                      borderColor: todo.completed ? "#4ade80" : "#ffffff80",
-                      backgroundColor: todo.completed
+                      borderColor: todo.isCompleted ? "#4ade80" : "#ffffff80",
+                      backgroundColor: todo.isCompleted
                         ? "#4ade80"
                         : "transparent",
                     }}
                   >
-                    {todo.completed && (
+                    {todo.isCompleted && (
                       <svg
                         className="w-4 h-4 text-white"
                         fill="none"
@@ -130,12 +157,12 @@ const Todos = () => {
                   </div>
                   <span
                     className={`flex-grow mx-4 text-lg ${
-                      todo.completed
+                      todo.isCompleted
                         ? "text-white/50 line-through"
                         : "text-white"
                     }`}
                   >
-                    {todo.text}
+                    {todo.task}
                   </span>
                   <button className="text-white/50 hover:text-pink-300 transition-colors duration-300 p-1 rounded-lg hover:bg-white/10">
                     <Trash size={20} />

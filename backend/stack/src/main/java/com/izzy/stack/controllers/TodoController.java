@@ -9,15 +9,14 @@ import com.izzy.stack.services.TodoService;
 
 import java.util.List;
 
-import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping("/api/todos")
-@CrossOrigin(origins = "http://localhost:5173")
 public class TodoController {
   private final TodoService todoService;
 
@@ -28,15 +27,17 @@ public class TodoController {
   // GET /api/todos
   @GetMapping
   public List<TodoDto> getTodosForUser(
-      @RequestHeader("X-User-ID") String userId) {
+      @AuthenticationPrincipal Jwt principal) {
+    String userId = principal.getSubject();
     return todoService.getTodosForUser(userId);
   }
 
   // POST /api/todos
   @PostMapping
   public TodoDto createTodo(
-      @RequestHeader("X-User-ID") String userId,
-      @RequestBody CreateTodoRequestDto request) {
+      @RequestBody CreateTodoRequestDto request,
+      @AuthenticationPrincipal Jwt principal) {
+    String userId = principal.getSubject();
     return todoService.createTodo(request, userId);
   }
 
