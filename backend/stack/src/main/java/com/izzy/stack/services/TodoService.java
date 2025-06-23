@@ -44,6 +44,8 @@ public class TodoService {
   }
 
   // updateTodoStatus(Long todoId, boolean isCompleted, String userId) -> returns
-  // deleteTodo(Long todoId, String userId)
-
+  // deleteTodo(Long )
+  public void deleteTodo(Long id) {
+    repository.deleteById(id);
+  }
 }

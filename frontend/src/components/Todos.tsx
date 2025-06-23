@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useApiClient } from "../apis/apiClient";
-import { Plus, Trash } from "lucide-react";
+import { Plus, Trash, Edit } from "lucide-react";
 import { UserButton } from "@clerk/clerk-react";
 
 // .TodoDto
@@ -55,6 +55,21 @@ const Todos = () => {
       setNewTask("");
     } catch (err) {
       console.error("Failed to add todo:", err);
+    }
+  };
+
+  // DELETE req
+  const deleteTask = async (id: number) => {
+    try {
+      await makeAuthenticatedRequest({
+        url: `/todos/${id}`,
+        method: "DELETE",
+      });
+
+      // Removes Completed tasks from List.
+      setTodos((currentTodos) => currentTodos.filter((todo) => todo.id !== id));
+    } catch (err) {
+      console.error("Failed to delete todo:", err);
     }
   };
 
@@ -155,17 +170,20 @@ const Todos = () => {
                       </svg>
                     )}
                   </div>
-                  <span
-                    className={`flex-grow mx-4 text-lg ${
-                      todo.isCompleted
-                        ? "text-white/50 line-through"
-                        : "text-white"
-                    }`}
-                  >
+                  <span className="flex-grow mx-4 text-lg text-white">
                     {todo.task}
                   </span>
-                  <button className="text-white/50 hover:text-pink-300 transition-colors duration-300 p-1 rounded-lg hover:bg-white/10">
+                  <button
+                    onClick={() => deleteTask(todo.id)}
+                    className="text-white/50 hover:text-pink-300 transition-colors duration-300 p-1 rounded-lg hover:bg-white/10"
+                  >
                     <Trash size={20} />
+                  </button>
+                  <button
+                    onClick={() => {}}
+                    className="text-white/50 hover:text-pink-300 transition-colors duration-300 p-1 rounded-lg hover:bg-white/10"
+                  >
+                    <Edit size={20} />
                   </button>
                 </div>
               ))
