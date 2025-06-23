@@ -22,15 +22,3 @@ export const useApiClient = () => {
   return { makeAuthenticatedRequest };
 };
 
-/*
-This code snippet will go on the Todos component once is ready
-const { isLoaded, isSignedIn, userId } = useAuth()
-
-// Use userId to fetch user's todos
-const fetchUserTodos = async () => {
-  if (!userId) return
-  
-  const response = await fetch(`/api/todos?userId=${userId}`)
-  return response.json()
-}
-*/
