@@ -4,6 +4,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.izzy.stack.dtos.CreateTodoRequestDto;
+import com.izzy.stack.dtos.TaskPatchDTO;
 import com.izzy.stack.dtos.TodoDto;
 import com.izzy.stack.services.TodoService;
 
@@ -13,6 +14,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -43,7 +45,13 @@ public class TodoController {
     return todoService.createTodo(request, userId);
   }
 
-  // PUT /api/todos/{id}
+  // PATCH /api/todos/{id}
+  @PatchMapping("/{id}")
+  public TodoDto updateTask(@PathVariable("id") Long id,
+      @RequestBody TaskPatchDTO patchDTO) {
+    return todoService.updateTask(id, patchDTO);
+  }
+
   // DELETE /api/todos/{id}
   @DeleteMapping("/{id}")
   public void deleteTodo(@PathVariable("id") Long id) {

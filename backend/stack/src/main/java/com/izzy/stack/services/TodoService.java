@@ -6,9 +6,12 @@ import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 
 import com.izzy.stack.dtos.CreateTodoRequestDto;
+import com.izzy.stack.dtos.TaskPatchDTO;
 import com.izzy.stack.dtos.TodoDto;
 import com.izzy.stack.entities.Todo;
 import com.izzy.stack.repositories.TodoRepository;
+
+import jakarta.persistence.EntityNotFoundException;
 
 @Service
 public class TodoService {
@@ -43,8 +46,32 @@ public class TodoService {
         savedTodo.getIsCompleted());
   }
 
-  // updateTodoStatus(Long todoId, boolean isCompleted, String userId) -> returns
-  // deleteTodo(Long )
+  // updateTodoStatus
+  public TodoDto updateTask(Long id, TaskPatchDTO patchDTO) {
+    // Fetch task
+    Todo todo = repository.findById(id)
+        .orElseThrow(() -> new EntityNotFoundException("Task was not found with: " + id));
+
+    // Update task field
+    if (patchDTO.task() != null) {
+      todo.setTask(patchDTO.task());
+    }
+
+    if (patchDTO.isCompleted() != null) {
+      todo.setIsCompleted(patchDTO.isCompleted());
+    }
+
+    // Save updated Todo
+    Todo updatedTodo = repository.save(todo);
+
+    // Return updated Todo
+    return new TodoDto(
+        updatedTodo.getId(),
+        updatedTodo.getTask(),
+        updatedTodo.getIsCompleted());
+  }
+
+  // deleteTodo
   public void deleteTodo(Long id) {
     repository.deleteById(id);
   }

@@ -60,16 +60,21 @@ const Todos = () => {
 
   // DELETE req
   const deleteTask = async (id: number) => {
-    try {
-      await makeAuthenticatedRequest({
-        url: `/todos/${id}`,
-        method: "DELETE",
-      });
+    const hasConfirmed = confirm("Do you want to delete this task?");
+    if (hasConfirmed) {
+      try {
+        await makeAuthenticatedRequest({
+          url: `/todos/${id}`,
+          method: "DELETE",
+        });
 
-      // Removes Completed tasks from List.
-      setTodos((currentTodos) => currentTodos.filter((todo) => todo.id !== id));
-    } catch (err) {
-      console.error("Failed to delete todo:", err);
+        // Removes Completed tasks from List.
+        setTodos((currentTodos) =>
+          currentTodos.filter((todo) => todo.id !== id)
+        );
+      } catch (err) {
+        console.error("Failed to delete todo:", err);
+      }
     }
   };
 
