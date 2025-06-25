@@ -47,7 +47,8 @@ public class TodoController {
 
   // PATCH /api/todos/{id}
   @PatchMapping("/{id}")
-  public TodoDto updateTask(@PathVariable("id") Long id,
+  public TodoDto updateTask(
+      @PathVariable("id") Long id,
       @RequestBody TaskPatchDTO patchDTO) {
     return todoService.updateTask(id, patchDTO);
   }
@@ -57,5 +58,4 @@ public class TodoController {
   public void deleteTodo(@PathVariable("id") Long id) {
     todoService.deleteTodo(id);
   }
-
 }

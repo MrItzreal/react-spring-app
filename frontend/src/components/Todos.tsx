@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useApiClient } from "../apis/apiClient";
-import { Plus, Trash, Edit } from "lucide-react";
+import { Plus, Trash, Edit, Ellipsis } from "lucide-react";
 import { UserButton } from "@clerk/clerk-react";
 
 // .TodoDto
@@ -14,10 +14,37 @@ interface CreateTodoRequest {
   task: string;
 }
 
+// .TaskPatchDTO
+interface TaskPatch {
+  // Both optional, since PATCH allows partial updates
+  task?: string;
+  isCompleted?: boolean;
+}
+
 const Todos = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [newTask, setNewTask] = useState("");
+  const [isEditing, setIsEditing] = useState(false);
+  const [updatedTask, setUpdatedTask] = useState("");
+  const [editingTaskId, setEditingTaskId] = useState<number | null>(null);
+  const [activeTaskId, setActiveTaskId] = useState<number | boolean | null>(
+    null
+  );
   const { makeAuthenticatedRequest } = useApiClient();
+
+  // Allows typing in editable field
+  const handleStatusChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUpdatedTask(e.target.value);
+  };
+
+  //Dot Menu Option
+  const toggleDotMenu = (id: number) => {
+    if (activeTaskId === id) {
+      setActiveTaskId(null); // Close the menu if clicking the same message
+    } else {
+      setActiveTaskId(id); // Open menu for clicked message
+    }
+  };
 
   // GET req
   useEffect(() => {
@@ -55,6 +82,53 @@ const Todos = () => {
       setNewTask("");
     } catch (err) {
       console.error("Failed to add todo:", err);
+    }
+  };
+
+  // Edit Tasks
+  const handleEdit = (task: Todo) => {
+    try {
+      if (task) {
+        setIsEditing(true);
+        setEditingTaskId(task.id);
+        setUpdatedTask(task.task);
+      } else {
+        setIsEditing(false);
+        setEditingTaskId(null);
+        setUpdatedTask("");
+        setActiveTaskId(true);
+      }
+    } catch (err) {
+      console.error("Failed to edit todo:", err);
+    }
+  };
+
+  // PATCH req: Save Edited Tasks
+  const handleSave = async (id: number) => {
+    try {
+      const patchData: TaskPatch = {
+        task: updatedTask,
+      };
+
+      await makeAuthenticatedRequest({
+        url: `/todos/${id}`,
+        method: "PATCH",
+        data: patchData,
+      });
+
+      setTodos((currentTodos) =>
+        currentTodos.map((todo) =>
+          todo.id === id ? { ...todo, ...patchData } : todo
+        )
+      );
+
+      // Reset editing states
+      setIsEditing(false);
+      setEditingTaskId(null);
+      setUpdatedTask("");
+      setActiveTaskId(true);
+    } catch (err) {
+      console.error("Failed to update todo:", err);
     }
   };
 
@@ -112,7 +186,7 @@ const Todos = () => {
             </div>
           </header>
 
-          {/* Input section - non-functional */}
+          {/* Input Section*/}
           <div className="flex items-center mb-6">
             <input
               type="text"
@@ -176,20 +250,62 @@ const Todos = () => {
                     )}
                   </div>
                   <span className="flex-grow mx-4 text-lg text-white">
-                    {todo.task}
+                    {isEditing && todo.id === editingTaskId ? (
+                      <input
+                        type="text"
+                        value={updatedTask}
+                        onChange={handleStatusChange}
+                        placeholder="Edit Task..."
+                        className="flex-grow p-2 text-lg bg-white/20 backdrop-blur-sm border border-white/30 text-white placeholder-white/70 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-transparent transition-all duration-300"
+                      />
+                    ) : (
+                      <p>{todo.task}</p>
+                    )}
                   </span>
-                  <button
-                    onClick={() => deleteTask(todo.id)}
-                    className="text-white/50 hover:text-pink-300 transition-colors duration-300 p-1 rounded-lg hover:bg-white/10"
-                  >
-                    <Trash size={20} />
-                  </button>
-                  <button
-                    onClick={() => {}}
-                    className="text-white/50 hover:text-pink-300 transition-colors duration-300 p-1 rounded-lg hover:bg-white/10"
-                  >
-                    <Edit size={20} />
-                  </button>
+
+                  {/* EDIT/SAVE/DELETE BTNS */}
+                  <div className="flex items-center justify-end gap-3">
+                    {activeTaskId !== todo.id ? (
+                      <button
+                        onClick={() => toggleDotMenu(todo.id)}
+                        className="text-white/50 hover:text-pink-300 transition-colors duration-300 p-1 rounded-lg hover:bg-white/10"
+                      >
+                        <Ellipsis size={20} />
+                      </button>
+                    ) : isEditing && todo.id === editingTaskId ? (
+                      <>
+                        <button
+                          className="inline-flex items-center px-3 text-sm font-medium text-white transition-colors border-2 border-white/20 rounded-full hover:bg-white/10 hover:border-white/30 focus:outline-none focus:ring-2 focus:ring-white/30 focus:ring-offset-2 focus:ring-offset-focusrings"
+                          onClick={() => handleSave(todo.id)}
+                        >
+                          Save
+                        </button>
+                        <button
+                          className="inline-flex items-center px-3 text-sm font-medium text-white transition-colors border-2 border-white/20 rounded-full hover:bg-white/10 hover:border-white/30 focus:outline-none focus:ring-2 focus:ring-white/30 focus:ring-offset-2 focus:ring-offset-focusrings"
+                          onClick={() => handleEdit(null)}
+                        >
+                          Cancel
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button
+                          onClick={() => deleteTask(todo.id)}
+                          className="text-white/50 hover:text-pink-300 transition-colors duration-300 p-1 rounded-lg hover:bg-white/10"
+                        >
+                          <Trash size={20} />
+                        </button>
+                        <button
+                          onClick={() => {
+                            handleEdit(todo);
+                          }}
+                          className="text-white/50 hover:text-pink-300 transition-colors duration-300 p-1 rounded-lg hover:bg-white/10"
+                        >
+                          <Edit size={20} />
+                        </button>
+                      </>
+                    )}
+                  </div>
                 </div>
               ))
             ) : (
