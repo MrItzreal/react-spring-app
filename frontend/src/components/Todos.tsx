@@ -1,25 +1,8 @@
 import { useState, useEffect } from "react";
 import { useApiClient } from "../apis/apiClient";
+import type { Todo, CreateTodoRequest, TaskPatch } from "../types/todo";
 import { Plus, Trash, Edit, Ellipsis } from "lucide-react";
 import { UserButton } from "@clerk/clerk-react";
-
-// .TodoDto
-interface Todo {
-  id: number;
-  task: string;
-  isCompleted?: boolean;
-}
-// .CreateTodoRequestDto
-interface CreateTodoRequest {
-  task: string;
-}
-
-// .TaskPatchDTO
-interface TaskPatch {
-  // Both optional, since PATCH allows partial updates
-  task?: string;
-  isCompleted?: boolean;
-}
 
 const Todos = () => {
   const [todos, setTodos] = useState<Todo[]>([]);
@@ -86,7 +69,7 @@ const Todos = () => {
   };
 
   // Edit Tasks
-  const handleEdit = (task: Todo) => {
+  const handleEdit = (task: Todo | null) => {
     try {
       if (task) {
         setIsEditing(true);
@@ -126,6 +109,7 @@ const Todos = () => {
       setIsEditing(false);
       setEditingTaskId(null);
       setUpdatedTask("");
+      setActiveTaskId(true);
     } catch (err) {
       console.error("Failed to update todo:", err);
     }
