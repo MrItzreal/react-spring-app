@@ -7,7 +7,7 @@ import { UserButton } from "@clerk/clerk-react";
 interface Todo {
   id: number;
   task: string;
-  isCompleted: boolean;
+  isCompleted?: boolean;
 }
 // .CreateTodoRequestDto
 interface CreateTodoRequest {
@@ -126,7 +126,38 @@ const Todos = () => {
       setIsEditing(false);
       setEditingTaskId(null);
       setUpdatedTask("");
-      setActiveTaskId(true);
+    } catch (err) {
+      console.error("Failed to update todo:", err);
+    }
+  };
+
+  // PATCH req: Check Completed Tasks
+  const handleCompletedTasks = async (id: number) => {
+    try {
+      const todo = todos.find((todo) => todo.id === id);
+
+      if (!todo) {
+        console.error(`Todo with id ${id} not found`);
+        return;
+      }
+
+      const patchData: TaskPatch = {
+        isCompleted: !todo.isCompleted,
+      };
+
+      await makeAuthenticatedRequest({
+        url: `/todos/${id}`,
+        method: "PATCH",
+        data: patchData,
+      });
+
+      setTodos((currentTodos) =>
+        currentTodos.map((todo) =>
+          todo.id === id
+            ? { ...todo, isCompleted: patchData.isCompleted }
+            : todo
+        )
+      );
     } catch (err) {
       console.error("Failed to update todo:", err);
     }
@@ -146,9 +177,12 @@ const Todos = () => {
         setTodos((currentTodos) =>
           currentTodos.filter((todo) => todo.id !== id)
         );
+        setActiveTaskId(true);
       } catch (err) {
         console.error("Failed to delete todo:", err);
       }
+    } else {
+      setActiveTaskId(true);
     }
   };
 
@@ -225,6 +259,9 @@ const Todos = () => {
                 >
                   <div
                     className="flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-300 cursor-pointer"
+                    onClick={() => {
+                      handleCompletedTasks(todo.id);
+                    }}
                     style={{
                       borderColor: todo.isCompleted ? "#4ade80" : "#ffffff80",
                       backgroundColor: todo.isCompleted
