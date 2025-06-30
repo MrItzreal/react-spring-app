@@ -2,6 +2,8 @@
 
 This is a simple Todo List application I built to help me get more comfortable working with a React + Spring Boot stack. It serves as a personal learning project to explore full-stack development using a modern tech stack that I’ve chosen as my go-to for future applications.
 
+![Demo of the application](./frontend/public/Demo.gif)
+
 ## 💡 Purpose
 
 I created this application to:
