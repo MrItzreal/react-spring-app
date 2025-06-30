@@ -23,6 +23,7 @@ I created this application to:
 ### Backend
 
 - **Spring Boot** – Java-based backend framework for building RESTful APIs.
+- **Maven** – A build tool for Java projects. Using a project object model (POM), Maven manages a project's compilation, testing, and documentation.
 - **PostgreSQL (PSQL)** – Relational database system.
 - **Supabase** – Managed backend-as-a-service used to host the PostgreSQL database.
 
